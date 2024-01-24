@@ -28,6 +28,13 @@ server.use(express.static("public"))//->serves index.html on "/" path and if we 
 
 
 //Api-endpoints-routes
+//C R U D
+//create
+server.post("/products",(req,res)=>{//->data is added through post method
+    console.log(req.body)
+   products.push(req.body)
+   res.json(req.body)
+})
 
 //Read
 server.get("/:id",(req,res)=>{ //-->auth on a particular route
@@ -38,7 +45,34 @@ server.get('/products/:id',(req,res)=>{
     let id = parseInt(req.params.id);
     res.send(products[id])
 })
+//UPDATE
+server.put('/products/:id',(req,res)=> {//-> overwirtes whole data
+    const id=+req.params.id;
+    const productIndex=products.findIndex(p=>p.id==id)
+    products.splice(productIndex,1,{...req.body,id:id})
+    res.status(201).send("done")
+})
+server.patch('/products/:id',(req,res)=> {//-> overwirtes some part of data (updates it)
+    const id=+req.params.id;
+    const productIndex=products.findIndex(p=>p.id==id)
+    const product=products[productIndex]
+    products.splice(productIndex,1,{ ...product,...req.body})//->product will have whole data , now whatever req.body has it over wirtes it
+    res.status(201).send("done")
+})
+//DELETE
+server.delete('/products/:id',(req,res)=> {//-> overwirtes some part of data (updates it)
+    const id=+req.params.id;
+    const productIndex=products.findIndex(p=>p.id==id)
+    const product=products[productIndex]
+    products.splice(productIndex,1)//->product will have whole data , now whatever req.body has it over wirtes it
+    res.status(201).send("done")
+})
 
+
+
+
+
+//
 // server.post("/",(req,res)=>{
 //     res.json({type:"get"})
 //  })
