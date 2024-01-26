@@ -1,43 +1,86 @@
 require('dotenv').config()
 const express = require('express');
+require('./events.js');
 const morgan = require('morgan');
-const mongoose=require("mongoose")
+const mongoose = require('mongoose');
+const cors = require('cors');
 const server = express();
-const cors=require("cors")
+const app = require('http').createServer(server);
+const io = require('socket.io')(app);
+const path = require('path');
 const productRouter = require('./routes/product')
 const userRouter = require('./routes/user')
-const {Schema}=mongoose
 const jwt = require('jsonwebtoken');
+const authRouter = require('./routes/auth')
+const fs = require('fs');
+const publicKey = fs.readFileSync(path.resolve(__dirname,'./public.key'),'utf-8')
 
-mongoose.connect(process.env.MONGO_URL)
-server.use((req,res,next)=>{
+
+console.log('env',process.env.DB_PASSWORD)
+
+//db connection
+main().catch(err => console.log(err));
+
+async function main() {
+  await mongoose.connect(process.env.MONGO_URL);
+  console.log('database connected')
+}
+//Schema
+
+
+
+
+
+
+
+
+//bodyParser
+const auth = (req,res,next)=>{
+  
   try{
-    const token=req.get('Authorization').split("Bearer ")[1]
-    console.log(token)
-    const decoded=jwt.verify(token,"secret")
-    console.log(decoded)
+    const token = req.get('Authorization').split('Bearer ')[1];
+    console.log(token);
+    var decoded = jwt.verify(token,publicKey );
     if(decoded.email){
       next()
+    }else{
+      res.sendStatus(401)
     }
+  }catch(err){
+    res.sendStatus(401)
   }
-  catch(err){
-    res.status(401).send({message:"You are not logged in!"})
-  }
+  console.log(decoded)
+  
 
-})
-//bodyParser
-server.use(cors())
-server.use(express.json()); 
-server.use(morgan('default')); 
-server.use(express.static(process.env.PUBLIC_DIR));
-server.use('/products',productRouter.router);
-server.use('/users',userRouter.router);
-server.use("*",(req,res)=>{
-res.sendFile(__dirname+"/build/index.html")
-})
+};
+io.on('connection', (socket) => { 
+  console.log('socket',socket.id)
 
-server.listen(process.env.PORT, () => {
-  console.log('server started');
+  socket.on('msg',(data)=>{
+    console.log({data})
+  })
+  setTimeout(()=>{
+    socket.emit('serverMsg',{server:'hi'})
+  },4000)
 });
 
-//schema
+server.use(cors());
+server.use(express.json());
+server.use(express.urlencoded());
+server.use(morgan('default'));
+server.use(express.static(path.resolve(__dirname,process.env.PUBLIC_DIR)));
+server.use('/auth',authRouter.router)
+server.use('/products',productRouter.router);
+server.use('/users',auth,userRouter.router);
+server.use('*',(req,res)=>{
+    res.sendFile(path.resolve(__dirname,'build','index.html'))
+})
+
+
+
+
+
+
+app.listen(process.env.PORT, () => {
+  console.log('server started');
+});
