@@ -1,6 +1,7 @@
 import AddProduct from './AddProduct';
 import './App.css';
 import ProductList from './ProductsList';
+// import Cart from "./component/cart"
 import {
   createBrowserRouter,
   RouterProvider,
@@ -11,12 +12,14 @@ import {
 const router = createBrowserRouter([
   {
     path: "/",
-    element:<ProductList></ProductList> ,
+    element:<ProductList></ProductList>
+     ,  
   },
   {
     path: "/add",
     element: <AddProduct></AddProduct>,
-  }
+  },
+  
 ]);
 
 function App() {

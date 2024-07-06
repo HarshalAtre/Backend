@@ -5,6 +5,7 @@ const router = express.Router();
 
 router
   .post('/', productController.createProduct)
+  .post("/cart/add/:id",productController.AddProduct)
   .get('/ssr', productController.getAllProductsSSR)
   .get('/add', productController.getAddForm)
   .get('/', productController.getAllProducts)
@@ -12,6 +13,6 @@ router
   .put('/:id', productController.replaceProduct)
   .patch('/:id', productController.updateProduct)
   .delete('/:id', productController.deleteProduct)
-
+  
 
 exports.router = router;  
